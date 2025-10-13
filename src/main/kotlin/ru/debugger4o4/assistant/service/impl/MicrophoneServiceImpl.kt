@@ -8,6 +8,7 @@ import ru.debugger4o4.assistant.service.MicrophoneService
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.DataLine
 import javax.sound.sampled.TargetDataLine
+import ru.debugger4o4.assistant.util.textExtract
 import java.io.File
 
 @Service
@@ -71,6 +72,8 @@ class MicrophoneServiceImpl(private val fileName: String = "record/recording.wav
             println("Длительность воспроизведения: $durationInSeconds сек.")
             println("Размер кадра: ${format.frameSize} байт")
             println("Битовая глубина: ${format.sampleSizeInBits}-бит")
+
+            textExtract()
 
             inputStream.close()
         } catch (ex: Exception) {
