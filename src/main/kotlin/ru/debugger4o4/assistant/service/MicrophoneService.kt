@@ -6,5 +6,5 @@ interface MicrophoneService {
 
     fun startRecord()
 
-    fun stopRecord(byteArray: ByteArray): String
+    fun stopRecord()
 }

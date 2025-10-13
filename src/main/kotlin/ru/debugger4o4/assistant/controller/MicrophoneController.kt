@@ -1,8 +1,6 @@
 package ru.debugger4o4.assistant.controller
 
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ru.debugger4o4.assistant.service.MicrophoneService
@@ -23,7 +21,7 @@ class MicrophoneController(private val microphoneService: MicrophoneService) {
     }
 
     @GetMapping("/stopRecord")
-    fun stopRecord(@RequestBody byteArray: ByteArray): String {
-        return microphoneService.stopRecord(byteArray)
+    fun stopRecord() {
+        microphoneService.stopRecord()
     }
 }
