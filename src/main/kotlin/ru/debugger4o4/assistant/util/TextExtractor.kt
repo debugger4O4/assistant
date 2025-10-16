@@ -1,64 +1,62 @@
 package ru.debugger4o4.assistant.util
 
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Request
-import org.json.JSONObject
-import java.io.File
-import java.nio.file.Files
+import com.google.gson.Gson
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 
-//import com.yandex.cloud.sdk.auth.AuthProvider
-//import com.yandex.cloud.sdk.auth.ServiceAccountKeyAuthProvider
-//import com.yandex.cloud.sdk.auth.IamTokenService
-import java.util.*
+import java.io.FileInputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.charset.StandardCharsets
 
-val token = generateToken()
-const val audioFilePath = "record/recording.wav"
 
-fun textExtract() {
-    val audioFile = File(audioFilePath)
-    val audioBytes = Files.readAllBytes(audioFile.toPath())
+@Component
+class TextExtractor {
 
-    val body = JSONObject()
-        .put("config", JSONObject()
-            .put("specification", JSONObject()
-                .put("languageCode", "ru-RU")
-                .put("profanityFilter", false))) // фильтрация ненормативной лексики
-        .put("audio", JSONObject()
-            .put("uri", ""))
-        .put("audioContent", audioBytes.toBase64String())
+    @Value("\${token}")
+    private lateinit var token: String
 
-    val jsonMediaType = "application/json; charset=utf-8".toMediaType()
-    val requestBody = body.toString().toRequestBody(jsonMediaType)
+    @Value("\${catalog}")
+    private lateinit var catalog: String
 
-    val client = OkHttpClient()
-    val request = Request.Builder()
-        .url("https://stt.api.cloud.yandex.net/speech/v1/stt:recognize")
-        .addHeader("Authorization", "Bearer $token")
-        .post(requestBody)
-        .build()
+    @Value("\${audio.file.path}")
+    private lateinit var audioFilePath: String
 
-    val response = client.newCall(request).execute()
+    fun textExtract() {
 
-    if (response.isSuccessful) {
-        val resultJson = JSONObject(response.body?.string())
-        val text = resultJson.optString("result", "")
-        println("Распознанный текст: $text")
-    } else {
-        println("Ошибка: ${response.message}")
+        val audioData = FileInputStream(audioFilePath).use { it.readAllBytes() }
+
+        val params = listOf(
+            "topic=general",
+            "folderId=$catalog",
+            "lang=ru-RU"
+        ).joinToString("&")
+
+        val url = URL("https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?$params")
+
+        with(url.openConnection() as HttpURLConnection) {
+            requestMethod = "POST"
+            doOutput = true
+            setRequestProperty("Content-Type", "application/octet-stream")
+            setRequestProperty("Authorization", "Bearer $token")
+
+            outputStream.write(audioData)
+
+            if (responseCode in 200..299) {
+                val gson = Gson()
+                val result = gson.fromJson(
+                    inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() },
+                    Map::class.java
+                )
+
+                if (result["error_code"] == null) {
+                    println(result["result"])
+                } else {
+                    println("Ошибка: ${result["message"]}")
+                }
+            } else {
+                println("Ошибка запроса: Код состояния $responseCode")
+            }
+        }
     }
-}
-
-private fun ByteArray.toBase64String(): String = Base64.getEncoder().encodeToString(this)
-
-
-fun generateToken() {
-//    val keyFilePath = "service_account_key.json"
-//
-//    val provider = AuthProvider.create(ServiceAccountKeyAuthProvider(keyFilePath))
-//    val iamTokenService = IamTokenService(provider)
-//    val iamToken = iamTokenService.createToken()
-//
-//    println("Токен IAM: $iamToken")
 }
