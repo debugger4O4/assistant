@@ -9,6 +9,7 @@ import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.DataLine
 import javax.sound.sampled.TargetDataLine
 import org.springframework.beans.factory.annotation.Autowired
+import ru.debugger4o4.assistant.util.RequestSender
 import ru.debugger4o4.assistant.util.TextExtractor
 import java.io.File
 
@@ -20,6 +21,9 @@ class MicrophoneServiceImpl(private val fileName: String = "record/recording.wav
 
     @Autowired
     private lateinit var textExtractor: TextExtractor
+
+    @Autowired
+    private lateinit var requestSender: RequestSender
 
     override fun getMicrophones(): String {
         var response = ""
@@ -77,7 +81,8 @@ class MicrophoneServiceImpl(private val fileName: String = "record/recording.wav
             println("Размер кадра: ${format.frameSize} байт")
             println("Битовая глубина: ${format.sampleSizeInBits}-бит")
 
-            textExtractor.textExtract()
+            val text = textExtractor.textExtract()
+            print(requestSender.sendQuery(text))
 
             inputStream.close()
         } catch (ex: Exception) {

@@ -13,16 +13,16 @@ import java.nio.charset.StandardCharsets
 @Component
 class TextExtractor {
 
-    @Value("\${token}")
+    @Value("\${yandex.iam.token}")
     private lateinit var token: String
 
-    @Value("\${catalog}")
+    @Value("\${yandex.cloud.catalog}")
     private lateinit var catalog: String
 
     @Value("\${audio.file.path}")
     private lateinit var audioFilePath: String
 
-    fun textExtract() {
+    fun textExtract(): String {
 
         val audioData = FileInputStream(audioFilePath).use { it.readAllBytes() }
 
@@ -50,11 +50,14 @@ class TextExtractor {
 
                 if (result["error_code"] == null) {
                     println(result["result"])
+                    return result["result"].toString()
                 } else {
                     println("Ошибка: ${result["message"]}")
+                    return ""
                 }
             } else {
                 println("Ошибка запроса: Код состояния $responseCode")
+                return ""
             }
         }
     }
