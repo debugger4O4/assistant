@@ -28,8 +28,8 @@ class TextExtractor {
 
         val params = listOf(
             "topic=general",
-            "folderId=$catalog",
-            "lang=ru-RU"
+            "lang=ru-RU",
+            "folderId=$catalog"
         ).joinToString("&")
 
         val url = URL("https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?$params")
@@ -37,7 +37,6 @@ class TextExtractor {
         with(url.openConnection() as HttpURLConnection) {
             requestMethod = "POST"
             doOutput = true
-            setRequestProperty("Content-Type", "application/octet-stream")
             setRequestProperty("Authorization", "Bearer $token")
 
             outputStream.write(audioData)
@@ -60,3 +59,6 @@ class TextExtractor {
         }
     }
 }
+
+
+

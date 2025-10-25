@@ -38,8 +38,8 @@ class MicrophoneServiceImpl(private val fileName: String = "record/recording.wav
                 AudioFormat.Encoding.PCM_SIGNED,
                 44100f, // частота дискретизации
                 16, // битовая глубина
-                2, // количество каналов (стерео)
-                4, // размер фрейма
+                1, // количество каналов (стерео)
+                2, // размер фрейма
                 44100f, // скорость передачи данных
                 false // bigEndian
             )
